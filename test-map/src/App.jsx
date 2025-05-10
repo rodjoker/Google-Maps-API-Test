@@ -1,38 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import React, { useState, useRef } from 'react';
+import { useJsApiLoader } from '@react-google-maps/api';
+import Formulario from './components/form/Formulario';
+import MapContainer from './components/maps/MapContainer';
 
 const libraries = ['places'];
 
 const App = () => {
-  const [map, setMap] = useState(null);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 19.4326, lng: -99.1332 });
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [searchCount, setSearchCount] = useState(0);
+  const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const debounceTimeout = useRef(null);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_REACT_APP_MAPS,
     libraries,
   });
-
-  const containerStyle = {
-    width: '400px',
-    height: '400px',
-  };
-
-  useEffect(() => {
-    if (selectedPlace && map) {
-      const bounds = new window.google.maps.LatLngBounds();
-      if (selectedPlace.geometry.viewport) {
-        bounds.union(selectedPlace.geometry.viewport);
-      } else {
-        bounds.extend(selectedPlace.geometry.location);
-      }
-      map.fitBounds(bounds);
-    }
-  }, [selectedPlace, map]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -47,7 +30,7 @@ const App = () => {
 
     debounceTimeout.current = setTimeout(() => {
       searchPlaces(value);
-    }, 3000); // Espera de 3 segundos
+    }, 3000);
   };
 
   const searchPlaces = (query) => {
@@ -64,85 +47,24 @@ const App = () => {
     });
   };
 
-  const handleSelectSuggestion = (placeId) => {
-    const service = new window.google.maps.places.PlacesService(document.createElement('div'));
-    service.getDetails({ placeId }, (place, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        setSelectedPlace(place);
-        setMapCenter({
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        });
-        setSuggestions([]);
-        setInputValue(place.formatted_address || '');
-      }
-    });
+  const handleSelectSuggestion = (placeId, description) => {
+    setSelectedPlaceId(placeId);
+    setInputValue(description);
+    setSuggestions([]);
   };
 
   if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading maps</div>;
+  if (!isLoaded) return <div>Loading maps...</div>;
 
   return (
     <div style={{ height: '100vh', width: '100%' }}>
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1,
-        width: '300px',
-        backgroundColor: 'white'
-      }}>
-        <input
-          type="text"
-          placeholder="Buscar dirección..."
-          style={{
-            width: '100%',
-            height: '40px',
-            padding: '0 12px',
-            borderRadius: '3px',
-            border: '1px solid #ccc',
-            fontSize: '14px',
-            outline: 'none'
-          }}
-          value={inputValue}
-          onChange={handleInputChange}
-        />
-        {suggestions.length > 0 && (
-          <ul style={{
-            listStyle: 'none',
-            margin: 0,
-            padding: 0,
-            border: '1px solid #ccc',
-            borderTop: 'none',
-            maxHeight: '200px',
-            overflowY: 'auto'
-          }}>
-            {suggestions.map((suggestion) => (
-              <li key={suggestion.place_id}
-                onClick={() => handleSelectSuggestion(suggestion.place_id)}
-                style={{
-                  padding: '10px',
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #eee',
-                  color: 'black'
-                }}
-              >
-                {suggestion.description}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={mapCenter}
-        zoom={12}
-        onLoad={(mapInstance) => setMap(mapInstance)}
-      >
-        <Marker position={mapCenter} />
-      </GoogleMap>
+      <Formulario
+        inputValue={inputValue}
+        suggestions={suggestions}
+        onInputChange={handleInputChange}
+        onSelectSuggestion={handleSelectSuggestion}
+      />
+      <MapContainer placeId={selectedPlaceId} />
       <p>Intentos de búsqueda (tras 3s de inactividad): {searchCount}</p>
     </div>
   );
