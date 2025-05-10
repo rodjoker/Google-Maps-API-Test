@@ -1,53 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { GoogleMap, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '400px',
   height: '400px',
 };
 
-const defaultCenter = { lat: 19.4326, lng: -99.1332 };
-
-const MapContainer = ({ placeId }) => {
-  const [map, setMap] = useState(null);
-  const [center, setCenter] = useState(defaultCenter);
-  const [selectedPlace, setSelectedPlace] = useState(null);
+const MapContainer = ({ originPlaceId, destinationPlaceId }) => {
+  //const [map, setMap] = useState(null);
+  const [directions, setDirections] = useState(null);
 
   useEffect(() => {
-    if (!placeId) return;
+    console.log("Origen:", originPlaceId, "Destino:", destinationPlaceId);
+  }, [originPlaceId, destinationPlaceId]);
+  
 
-    const service = new window.google.maps.places.PlacesService(
-      document.createElement('div')
+  useEffect(() => {
+    if (!originPlaceId || !destinationPlaceId) return;
+
+    const directionsService = new window.google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: { placeId: originPlaceId },
+        destination: { placeId: destinationPlaceId },
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === window.google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+        } else {
+          console.error('Error al calcular ruta:', status);
+        }
+      }
     );
-    service.getDetails({ placeId }, (place, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        setSelectedPlace(place);
-        const location = place.geometry.location;
-        setCenter({ lat: location.lat(), lng: location.lng() });
-      }
-    });
-  }, [placeId]);
-
-  useEffect(() => {
-    if (selectedPlace && map) {
-      const bounds = new window.google.maps.LatLngBounds();
-      if (selectedPlace.geometry.viewport) {
-        bounds.union(selectedPlace.geometry.viewport);
-      } else {
-        bounds.extend(selectedPlace.geometry.location);
-      }
-      map.fitBounds(bounds);
-    }
-  }, [selectedPlace, map]);
+  }, [originPlaceId, destinationPlaceId]);
 
   return (
     <GoogleMap
       mapContainerStyle={containerStyle}
-      center={center}
+      center={{ lat: 19.4326, lng: -99.1332 }}
       zoom={12}
-      onLoad={(mapInstance) => setMap(mapInstance)}
+      //onLoad={setMap}
     >
-      <Marker position={center} />
+      {directions && <DirectionsRenderer directions={directions} />}
     </GoogleMap>
   );
 };

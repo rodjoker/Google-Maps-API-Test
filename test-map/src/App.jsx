@@ -6,10 +6,14 @@ import MapContainer from './components/maps/MapContainer';
 const libraries = ['places'];
 
 const App = () => {
-  const [inputValue, setInputValue] = useState('');
+  const [inputA, setInputA] = useState('');
+  const [inputB, setInputB] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [searchCount, setSearchCount] = useState(0);
-  const [selectedPlaceId, setSelectedPlaceId] = useState(null);
+  const [selectedA, setSelectedA] = useState(null);
+  const [selectedB, setSelectedB] = useState(null);
+  const [activeInput, setActiveInput] = useState('A');
+
   const debounceTimeout = useRef(null);
 
   const { isLoaded, loadError } = useJsApiLoader({
@@ -17,10 +21,19 @@ const App = () => {
     libraries,
   });
 
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setInputValue(value);
+  const handleInputChangeA = (e) => {
+    setInputA(e.target.value);
+    setActiveInput('A');
+    handleDebounceSearch(e.target.value);
+  };
 
+  const handleInputChangeB = (e) => {
+    setInputB(e.target.value);
+    setActiveInput('B');
+    handleDebounceSearch(e.target.value);
+  };
+
+  const handleDebounceSearch = (value) => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
     if (value.trim() === '') {
@@ -48,8 +61,13 @@ const App = () => {
   };
 
   const handleSelectSuggestion = (placeId, description) => {
-    setSelectedPlaceId(placeId);
-    setInputValue(description);
+    if (activeInput === 'A') {
+      setSelectedA(placeId);
+      setInputA(description);
+    } else {
+      setSelectedB(placeId);
+      setInputB(description);
+    }
     setSuggestions([]);
   };
 
@@ -59,12 +77,14 @@ const App = () => {
   return (
     <div style={{ height: '100vh', width: '100%' }}>
       <Formulario
-        inputValue={inputValue}
+        inputValueA={inputA}
+        inputValueB={inputB}
         suggestions={suggestions}
-        onInputChange={handleInputChange}
+        onInputChangeA={handleInputChangeA}
+        onInputChangeB={handleInputChangeB}
         onSelectSuggestion={handleSelectSuggestion}
       />
-      <MapContainer placeId={selectedPlaceId} />
+      <MapContainer originPlaceId={selectedA} destinationPlaceId={selectedB} />
       <p>Intentos de búsqueda (tras 3s de inactividad): {searchCount}</p>
     </div>
   );

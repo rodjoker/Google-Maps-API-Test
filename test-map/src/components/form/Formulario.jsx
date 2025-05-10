@@ -1,6 +1,13 @@
 import React from 'react';
 
-const Formulario = ({ inputValue, suggestions, onInputChange, onSelectSuggestion }) => {
+const Formulario = ({
+  inputValueA,
+  inputValueB,
+  suggestions,
+  onInputChangeA,
+  onInputChangeB,
+  onSelectSuggestion
+}) => {
   return (
     <div style={{
       position: 'absolute',
@@ -13,39 +20,25 @@ const Formulario = ({ inputValue, suggestions, onInputChange, onSelectSuggestion
     }}>
       <input
         type="text"
-        placeholder="Buscar dirección..."
-        style={{
-          width: '100%',
-          height: '40px',
-          padding: '0 12px',
-          borderRadius: '3px',
-          border: '1px solid #ccc',
-          fontSize: '14px',
-          outline: 'none'
-        }}
-        value={inputValue}
-        onChange={onInputChange}
+        placeholder="Origen..."
+        value={inputValueA}
+        onChange={onInputChangeA}
+        style={inputStyle}
+      />
+      <input
+        type="text"
+        placeholder="Destino..."
+        value={inputValueB}
+        onChange={onInputChangeB}
+        style={{ ...inputStyle, marginTop: '10px' }}
       />
       {suggestions.length > 0 && (
-        <ul style={{
-          listStyle: 'none',
-          margin: 0,
-          padding: 0,
-          border: '1px solid #ccc',
-          borderTop: 'none',
-          maxHeight: '200px',
-          overflowY: 'auto'
-        }}>
+        <ul style={suggestionsStyle}>
           {suggestions.map((suggestion) => (
             <li
               key={suggestion.place_id}
               onClick={() => onSelectSuggestion(suggestion.place_id, suggestion.description)}
-              style={{
-                padding: '10px',
-                cursor: 'pointer',
-                borderBottom: '1px solid #eee',
-                color: 'black'
-              }}
+              style={suggestionItemStyle}
             >
               {suggestion.description}
             </li>
@@ -54,6 +47,33 @@ const Formulario = ({ inputValue, suggestions, onInputChange, onSelectSuggestion
       )}
     </div>
   );
+};
+
+const inputStyle = {
+  width: '100%',
+  height: '40px',
+  padding: '0 12px',
+  borderRadius: '3px',
+  border: '1px solid #ccc',
+  fontSize: '14px',
+  outline: 'none'
+};
+
+const suggestionsStyle = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  border: '1px solid #ccc',
+  borderTop: 'none',
+  maxHeight: '200px',
+  overflowY: 'auto'
+};
+
+const suggestionItemStyle = {
+  padding: '10px',
+  cursor: 'pointer',
+  borderBottom: '1px solid #eee',
+  color: 'black'
 };
 
 export default Formulario;
