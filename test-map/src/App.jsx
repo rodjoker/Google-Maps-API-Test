@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import Formulario from './components/form/Formulario';
 import MapContainer from './components/maps/MapContainer';
+import { handleSelectSuggestion as handleSelectSuggestionUtil, searchPlaces as searchPlacesUtil } from './utils/MapsFunction';
+
 
 const libraries = ['places'];
 
@@ -47,29 +49,21 @@ const App = () => {
   };
 
   const searchPlaces = (query) => {
-    if (!window.google || !query) return;
-
-    const service = new window.google.maps.places.AutocompleteService();
-    service.getPlacePredictions({ input: query }, (predictions, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        setSuggestions(predictions);
-        setSearchCount((prev) => prev + 1);
-      } else {
-        setSuggestions([]);
-      }
-    });
+    searchPlacesUtil(query, setSuggestions, setSearchCount);
   };
-
+  
   const handleSelectSuggestion = (placeId, description) => {
-    if (activeInput === 'A') {
-      setSelectedA(placeId);
-      setInputA(description);
-    } else {
-      setSelectedB(placeId);
-      setInputB(description);
-    }
-    setSuggestions([]);
-  };
+    handleSelectSuggestionUtil({
+      placeId,
+      description,
+      activeInput,
+      setSelectedA,
+      setSelectedB,
+      setInputA,
+      setInputB,
+      setSuggestions,
+    });
+  };  
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading maps...</div>;

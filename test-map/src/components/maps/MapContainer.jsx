@@ -13,7 +13,6 @@ const MapContainer = ({ originPlaceId, destinationPlaceId }) => {
   useEffect(() => {
     console.log("Origen:", originPlaceId, "Destino:", destinationPlaceId);
   }, [originPlaceId, destinationPlaceId]);
-  
 
   useEffect(() => {
     if (!originPlaceId || !destinationPlaceId) return;
@@ -43,7 +42,18 @@ const MapContainer = ({ originPlaceId, destinationPlaceId }) => {
       zoom={12}
       //onLoad={setMap}
     >
-      {directions && <DirectionsRenderer directions={directions} />}
+      {directions && 
+      <DirectionsRenderer 
+       directions={directions}
+      options={{
+        polylineOptions: {
+          strokeColor:" #FF8744",
+          strokeOpacity: 0.8,
+          strokeWeight: 5,
+        },
+      }}
+
+      />}
     </GoogleMap>
   );
 };
